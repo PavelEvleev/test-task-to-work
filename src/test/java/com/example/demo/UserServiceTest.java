@@ -18,9 +18,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.Mockito.when;
 
-/**
- * Created by Pavel on 03.04.2018.
- */
 
 @RunWith(MockitoJUnitRunner.class)
 public class UserServiceTest {

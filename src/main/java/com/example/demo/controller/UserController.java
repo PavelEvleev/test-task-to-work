@@ -45,7 +45,6 @@ public class UserController extends ApiErrorController {
      */
     @PostMapping
     public ResponseEntity<ResponseUserInfo> create(@RequestBody User user) throws UserOperationException {
-        System.out.println(user.getName());
         return ResponseEntity.status(HttpStatus.CREATED).body(new ResponseUserInfo(service.saveNewUser(user)));
     }
 

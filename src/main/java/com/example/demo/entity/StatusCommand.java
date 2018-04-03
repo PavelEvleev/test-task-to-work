@@ -45,4 +45,25 @@ public class StatusCommand {
     public void setLastStatus(boolean lastStatus) {
         this.lastStatus = lastStatus;
     }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        StatusCommand command = (StatusCommand) o;
+
+        if (status != command.status) return false;
+        if (lastStatus != command.lastStatus) return false;
+        return uuid != null ? uuid.equals(command.uuid) : command.uuid == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = uuid != null ? uuid.hashCode() : 0;
+        result = 31 * result + (status ? 1 : 0);
+        result = 31 * result + (lastStatus ? 1 : 0);
+        return result;
+    }
 }

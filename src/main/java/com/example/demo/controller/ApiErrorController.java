@@ -3,6 +3,7 @@ package com.example.demo.controller;
 import com.example.demo.services.exception.ApiError;
 import com.example.demo.services.exception.UserOperationException;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -12,11 +13,11 @@ import org.springframework.web.bind.annotation.RestController;
  * @author Pavel
  * @version 1
  */
-@RestController
+@ControllerAdvice
 public class ApiErrorController {
 
     /**
-     * A method for sending notification of the client about specific error
+     * Send notification to client about a specific error
      *
      * @param exception - specific exception
      * @return explanation of the error code

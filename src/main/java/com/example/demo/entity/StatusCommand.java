@@ -6,7 +6,7 @@ package com.example.demo.entity;
  * */
 public class StatusCommand {
 
-    private String uuid;
+    private Long id;
 
     private boolean status;
 
@@ -15,18 +15,18 @@ public class StatusCommand {
     public StatusCommand(User user, boolean lastStatus) {
         this.lastStatus = lastStatus;
         this.status = user.isOnline();
-        this.uuid = user.getUuid();
+        this.id = user.getId();
     }
 
     public StatusCommand() {
     }
 
-    public String getUuid() {
-        return uuid;
+    public Long getId() {
+        return id;
     }
 
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public boolean isStatus() {
@@ -56,12 +56,12 @@ public class StatusCommand {
 
         if (status != command.status) return false;
         if (lastStatus != command.lastStatus) return false;
-        return uuid != null ? uuid.equals(command.uuid) : command.uuid == null;
+        return id != null ? id.equals(command.id) : command.id == null;
     }
 
     @Override
     public int hashCode() {
-        int result = uuid != null ? uuid.hashCode() : 0;
+        int result = id != null ? id.hashCode() : 0;
         result = 31 * result + (status ? 1 : 0);
         result = 31 * result + (lastStatus ? 1 : 0);
         return result;

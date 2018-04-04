@@ -28,18 +28,13 @@ public class UserServiceTest {
     UserRepository repository;
 
     @Test
-    public void shouldSaveUserIfAllFieldIsSet() {
+    public void shouldSaveUserIfAllFieldIsSet() throws UserOperationException {
         User expectedUser = new User("Pavel", "375447667131",
                 "abracadabra1993", "sacsac@gmail.com", "some url");
         when(repository.saveAndFlush(expectedUser)).thenReturn(expectedUser);
-        String result = "";
-        try {
-            result = service.saveNewUser(expectedUser);
+        Long result = service.saveNewUser(expectedUser);
 
-        } catch (UserOperationException e) {
-            fail(e.getMessage());
-        }
-        assertThat(result).isEqualTo(expectedUser.getUuid());
+        assertThat(result).isEqualTo(expectedUser.getId());
     }
 
     @Test
@@ -47,36 +42,32 @@ public class UserServiceTest {
         User expectedUser = new User();
         expectedUser.setName("Pasha");
         try {
-            String result = service.saveNewUser(expectedUser);
+            service.saveNewUser(expectedUser);
         } catch (UserOperationException e) {
             assertThat(e.getErrorCode()).isEqualTo(ErrorCode.FIELDS_CAN_NOT_BE_EMPTY);
         }
     }
 
     @Test
-    public void shouldFindUserByUUIDIfExist() {
+    public void shouldFindUserByUUIDIfExist() throws UserOperationException {
         User expectedUser = new User("Pavel", "375447667131",
                 "abracadabra1993", "sacsac@gmail.com", "some url");
-        when(repository.findByUuid(expectedUser.getUuid())).thenReturn(Optional.of(expectedUser));
-        try {
-            Optional<User> optional = Optional.ofNullable(service.getUserByUUID(expectedUser.getUuid()));
-            if (optional.isPresent()) {
-                User result = optional.get();
-                assertThat(result).isEqualTo(expectedUser);
-            }
-        } catch (UserOperationException e) {
-            fail(e.getMessage());
+        when(repository.findById(expectedUser.getId())).thenReturn(Optional.of(expectedUser));
+        Optional<User> optional = Optional.ofNullable(service.getUserByID(expectedUser.getId()));
+        if (optional.isPresent()) {
+            User result = optional.get();
+            assertThat(result).isEqualTo(expectedUser);
         }
     }
 
     @Test
     public void shouldThrowExceptionIfUserNotExistByThatUUID() {
 
-        String someNotExistedUuid = "asas-asd12-1221d-as-2332fsc";
+        Long someNotExistedUuid = 1L;
 
-        when(repository.findByUuid(someNotExistedUuid)).thenReturn(Optional.empty());
+        when(repository.findById(someNotExistedUuid)).thenReturn(Optional.empty());
         try {
-            Optional<User> optional = Optional.ofNullable(service.getUserByUUID(someNotExistedUuid));
+            Optional<User> optional = Optional.ofNullable(service.getUserByID(someNotExistedUuid));
             if (optional.isPresent()) {
                 fail("It`s can be)");
             }
@@ -86,30 +77,26 @@ public class UserServiceTest {
     }
 
     @Test
-    public void shouldChangeUserStatusByUUIDIfUserExist() {
+    public void shouldChangeUserStatusByUUIDIfUserExist() throws UserOperationException {
         User expectedUser = new User("Pavel", "375447667131",
                 "abracadabra1993", "sacsac@gmail.com", "some url");
-        when(repository.findByUuid(expectedUser.getUuid())).thenReturn(Optional.of(expectedUser));
+        when(repository.findById(expectedUser.getId())).thenReturn(Optional.of(expectedUser));
         when(repository.saveAndFlush(expectedUser)).thenReturn(copy(expectedUser, true));
 
         StatusCommand command = new StatusCommand();
-        command.setUuid(expectedUser.getUuid());
+        command.setId(expectedUser.getId());
         command.setStatus(true);
-        try {
-            StatusCommand result = service.changeStatus(command);
+        StatusCommand result = service.changeStatus(command);
 
-            assertThat(result.getUuid()).isEqualTo(command.getUuid());
-            assertThat(result.isStatus()).isTrue();
-            assertThat(result.isLastStatus()).isFalse();
-        } catch (UserOperationException e) {
-            fail(e.getMessage());
-        }
+        assertThat(result.getId()).isEqualTo(command.getId());
+        assertThat(result.isStatus()).isTrue();
+        assertThat(result.isLastStatus()).isFalse();
     }
 
     private User copy(User user, boolean status) {
         User result = new User();
         result.setOnline(status);
-        result.setUuid(user.getUuid());
+        result.setId(user.getId());
         result.setName(user.getName());
         result.setAvatar(user.getAvatar());
         result.setEmail(user.getEmail());

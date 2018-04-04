@@ -38,33 +38,24 @@ public class UserService {
      * @throws UserOperationException - exception with explanation what go wrong
      * @see User
      */
-    public String saveNewUser(User user) throws UserOperationException {
-        String resultUUID;
+    public Long saveNewUser(User user) throws UserOperationException {
         if (user.getName() == null || user.getAvatar() == null ||
                 user.getEmail() == null || user.getPassword() == null || user.getPhone() == null) {
             throw new UserOperationException(ErrorCode.FIELDS_CAN_NOT_BE_EMPTY);
         }
-        resultUUID = repository.saveAndFlush(user).getUuid();
-        return resultUUID;
+        return repository.saveAndFlush(user).getId();
     }
 
 
     /**
      * Method for obtain user by unique identifier
      *
-     * @param uuid - unique identifier of user
+     * @param id - unique identifier of user
      * @return user data
      * @throws UserOperationException - exception with explanation what go wrong
      */
-    public User getUserByUUID(String uuid) throws UserOperationException {
-        User user;
-        Optional<User> optional = repository.findByUuid(uuid);
-        if (optional.isPresent()) {
-            user = optional.get();
-        } else {
-            throw new UserOperationException(ErrorCode.USER_NOT_EXISTED);
-        }
-        return user;
+    public User getUserByID(Long id) throws UserOperationException {
+        return repository.findById(id).orElseThrow(() -> new UserOperationException(ErrorCode.USER_NOT_EXISTED));
     }
 
     /**
@@ -76,16 +67,15 @@ public class UserService {
      * @see StatusCommand
      */
     public StatusCommand changeStatus(StatusCommand command) throws UserOperationException {
-        Optional<User> optional = repository.findByUuid(command.getUuid());
-        if (optional.isPresent()) {
-            User user = optional.get();
-            boolean lastStatus = user.isOnline();
-            user.setOnline(command.isStatus());
-            user = repository.saveAndFlush(user);
-            StatusCommand result = new StatusCommand(user, lastStatus);
-            return result;
-        } else {
+        Optional<User> optional = repository.findById(command.getId());
+        if (!optional.isPresent()) {
             throw new UserOperationException(ErrorCode.USER_NOT_EXISTED);
         }
+        User user = optional.get();
+        boolean lastStatus = user.isOnline();
+        user.setOnline(command.isStatus());
+        user = repository.saveAndFlush(user);
+        StatusCommand result = new StatusCommand(user, lastStatus);
+        return result;
     }
 }

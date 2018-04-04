@@ -1,6 +1,6 @@
 package com.example.demo.controller;
 
-import com.example.demo.entity.ResponseUserInfo;
+import com.example.demo.entity.UserInfo;
 import com.example.demo.entity.StatusCommand;
 import com.example.demo.entity.User;
 import com.example.demo.services.UserService;
@@ -16,8 +16,8 @@ import org.springframework.web.bind.annotation.*;
  * @version 1
  */
 @RestController
-@RequestMapping("/v1/user")
-public class UserController extends ApiErrorController {
+@RequestMapping("/v1/users")
+public class UserController {
 
     /**
      * Service for user data manipulation
@@ -44,21 +44,21 @@ public class UserController extends ApiErrorController {
      * @see UserOperationException
      */
     @PostMapping
-    public ResponseEntity<ResponseUserInfo> create(@RequestBody User user) throws UserOperationException {
-        return ResponseEntity.status(HttpStatus.CREATED).body(new ResponseUserInfo(service.saveNewUser(user)));
+    public ResponseEntity<UserInfo> create(@RequestBody User user) throws UserOperationException {
+        return ResponseEntity.status(HttpStatus.CREATED).body(new UserInfo(service.saveNewUser(user)));
     }
 
     /**
      * The Get method to retrieve user data
      *
-     * @param uuid - unique identifier of user
+     * @param id - unique identifier of user
      * @return user data
      * @throws UserOperationException -  A custom exception to notify the client
      * @see UserOperationException
      */
     @GetMapping
-    public ResponseEntity<User> getUserByUUID(@RequestParam(value = "uuid") String uuid) throws UserOperationException {
-        return ResponseEntity.ok(service.getUserByUUID(uuid));
+    public ResponseEntity<User> getUserByUUID(@RequestParam(value = "id") Long id) throws UserOperationException {
+        return ResponseEntity.ok(service.getUserByID(id));
     }
 
     /**

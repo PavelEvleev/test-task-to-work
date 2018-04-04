@@ -6,7 +6,7 @@ package com.example.demo.services.exception;
  * @author Pavel
  * */
 public enum ErrorCode {
-    USER_NOT_EXISTED(404, "User not existed with that UUID"),
+    USER_NOT_EXISTED(404, "User not existed with that ID"),
     FIELDS_CAN_NOT_BE_EMPTY(400, "All fields must be filled");
 
     private final int code;

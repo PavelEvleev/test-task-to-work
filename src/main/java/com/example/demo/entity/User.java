@@ -2,7 +2,6 @@ package com.example.demo.entity;
 
 
 import javax.persistence.*;
-import java.util.UUID;
 
 /**
  * Created by Pavel on 02.04.2018.
@@ -27,9 +26,6 @@ public class User {
     @Column(name = "email", nullable = false)
     private String email;
 
-    @Column(name = "uuid", nullable = false)
-    private String uuid;
-
     @Column(name = "user_avatar", nullable = false)
     private String avatar;
 
@@ -37,7 +33,6 @@ public class User {
     private Boolean online;
 
     public User() {
-        this.uuid = UUID.randomUUID().toString();
         this.online = false;
     }
 
@@ -47,7 +42,6 @@ public class User {
         this.phone = phone;
         this.password = password;
         this.email = email;
-        this.uuid = UUID.randomUUID().toString();
         this.online = false;
     }
 
@@ -83,12 +77,20 @@ public class User {
         this.email = email;
     }
 
-    public String getUuid() {
-        return uuid;
+    public Long getId() {
+        return id;
     }
 
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Boolean getOnline() {
+        return online;
+    }
+
+    public void setOnline(Boolean online) {
+        this.online = online;
     }
 
     public String getAvatar() {
@@ -103,10 +105,6 @@ public class User {
         return online;
     }
 
-    public void setOnline(Boolean online) {
-        this.online = online;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -118,7 +116,6 @@ public class User {
         if (phone != null ? !phone.equals(user.phone) : user.phone != null) return false;
         if (password != null ? !password.equals(user.password) : user.password != null) return false;
         if (email != null ? !email.equals(user.email) : user.email != null) return false;
-        if (uuid != null ? !uuid.equals(user.uuid) : user.uuid != null) return false;
         return avatar != null ? avatar.equals(user.avatar) : user.avatar == null;
     }
 
@@ -128,7 +125,6 @@ public class User {
         result = 31 * result + (phone != null ? phone.hashCode() : 0);
         result = 31 * result + (password != null ? password.hashCode() : 0);
         result = 31 * result + (email != null ? email.hashCode() : 0);
-        result = 31 * result + (uuid != null ? uuid.hashCode() : 0);
         result = 31 * result + (avatar != null ? avatar.hashCode() : 0);
         return result;
     }

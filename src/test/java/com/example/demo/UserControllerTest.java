@@ -21,7 +21,6 @@ import org.springframework.test.web.servlet.ResultActions;
 
 import static com.jayway.jsonpath.JsonPath.read;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.fail;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -41,7 +40,7 @@ public class UserControllerTest {
     private UserRepository repository;
 
     @Test
-    public void shouldCreateUser() throws UserOperationException {
+    public void shouldCreateUser() throws Exception {
         String createUser = "{\"name\": \"Pscascasha\",\n" +
                 "\t\"phone\": \"654654\",\n" +
                 "\t\"password\": \"sacs5465\",\n" +
@@ -49,155 +48,127 @@ public class UserControllerTest {
                 "\t\"avatar\": \"cascsaasdsad\"}";
         User expectedUser = new User("Pscascasha", "654654",
                 "sacs5465", "me.as.asd@gmail.com", "cascsaasdsad");
-        String uuid = expectedUser.getUuid();
-        Mockito.when(service.saveNewUser(Mockito.any(User.class))).thenReturn(uuid);
-        try {
-            final ResultActions resultActions = rest.perform(post("/v1/user").accept(MediaType.APPLICATION_JSON)
-                    .content(createUser).contentType(MediaType.APPLICATION_JSON));
+        expectedUser.setId(1L);
+        Long id = expectedUser.getId();
+        Mockito.when(service.saveNewUser(Mockito.any(User.class))).thenReturn(id);
+        final ResultActions resultActions = rest.perform(post("/v1/users").accept(MediaType.APPLICATION_JSON)
+                .content(createUser).contentType(MediaType.APPLICATION_JSON));
 
+        String result = resultActions.andReturn().getResponse().getContentAsString();
+        String expect = "{id:" + id + "}";
 
-            String result = resultActions.andReturn().getResponse().getContentAsString();
-            String expect = "{uuid:" + uuid + "}";
-
-            resultActions.andExpect(status().isCreated());
-            JSONAssert.assertEquals(expect, result, true);
-        } catch (Exception e) {
-            fail(e.getMessage());
-        }
+        resultActions.andExpect(status().isCreated());
+        JSONAssert.assertEquals(expect, result, true);
     }
 
     @Test
-    public void shouldThrowExceptionIfSomeFieldNotSet() {
+    public void shouldThrowExceptionIfSomeFieldNotSet() throws Exception {
         String createUser = "{\"name\":\"Pasha\"}";
-        try {
-            Mockito.when(service.saveNewUser(Mockito.any(User.class))).thenCallRealMethod();
-            Mockito.when(repository.saveAndFlush(Mockito.any(User.class))).thenReturn(new User());
+        Mockito.when(service.saveNewUser(Mockito.any(User.class))).thenCallRealMethod();
+        Mockito.when(repository.saveAndFlush(Mockito.any(User.class))).thenReturn(new User());
 
-            final ResultActions resultActions = rest.perform(post("/v1/user").accept(MediaType.APPLICATION_JSON)
-                    .content(createUser).contentType(MediaType.APPLICATION_JSON));
-            String result = resultActions.andReturn().getResponse().getContentAsString();
-            String message = read(result, "$.message");
-            Integer errorCode = read(result, "$.errorCode");
+        final ResultActions resultActions = rest.perform(post("/v1/users").accept(MediaType.APPLICATION_JSON)
+                .content(createUser).contentType(MediaType.APPLICATION_JSON));
+        String result = resultActions.andReturn().getResponse().getContentAsString();
+        String message = read(result, "$.message");
+        Integer errorCode = read(result, "$.errorCode");
 
-            resultActions.andExpect(status().isBadRequest());
-            assertThat(message).isEqualTo(ErrorCode.FIELDS_CAN_NOT_BE_EMPTY.getDescription());
-            assertThat(errorCode).isEqualTo(ErrorCode.FIELDS_CAN_NOT_BE_EMPTY.getCode());
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail();
-        }
+        resultActions.andExpect(status().isBadRequest());
+        assertThat(message).isEqualTo(ErrorCode.FIELDS_CAN_NOT_BE_EMPTY.getDescription());
+        assertThat(errorCode).isEqualTo(ErrorCode.FIELDS_CAN_NOT_BE_EMPTY.getCode());
     }
 
     @Test
-    public void shouldReturnUserByUUIDIfExisted() {
+    public void shouldReturnUserByUUIDIfExisted() throws Exception {
         User expectedUser = new User("Pscascasha", "654654",
                 "sacs5465", "me.as.asd@gmail.com", "cascsaasdsad");
-        try {
-            Mockito.when(service.getUserByUUID(expectedUser.getUuid())).thenReturn(expectedUser);
+        expectedUser.setId(1L);
+        Mockito.when(service.getUserByID(expectedUser.getId())).thenReturn(expectedUser);
 
-            final ResultActions resultActions = rest.perform(get("/v1/user")
-                    .param("uuid", expectedUser.getUuid()).accept(MediaType.APPLICATION_JSON));
-            String result = resultActions.andReturn().getResponse().getContentAsString();
+        final ResultActions resultActions = rest.perform(get("/v1/users")
+                .param("id", Long.toString(expectedUser.getId())).accept(MediaType.APPLICATION_JSON));
+        String result = resultActions.andReturn().getResponse().getContentAsString();
 
-            String name = read(result, "$.name");
-            String phone = read(result, "$.phone");
-            String email = read(result, "$.email");
-            String uuid = read(result, "$.uuid");
+        String name = read(result, "$.name");
+        String phone = read(result, "$.phone");
+        String email = read(result, "$.email");
+        Long id = new Long((Integer) read(result, "$.id"));
 
-            resultActions.andExpect(status().isOk());
-            assertThat(name).isEqualTo(expectedUser.getName());
-            assertThat(phone).isEqualTo(expectedUser.getPhone());
-            assertThat(email).isEqualTo(expectedUser.getEmail());
-            assertThat(uuid).isEqualTo(expectedUser.getUuid());
+        resultActions.andExpect(status().isOk());
+        assertThat(name).isEqualTo(expectedUser.getName());
+        assertThat(phone).isEqualTo(expectedUser.getPhone());
+        assertThat(email).isEqualTo(expectedUser.getEmail());
+        assertThat(id).isEqualTo(expectedUser.getId());
 
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail();
-        }
     }
 
     @Test
-    public void shouldThrowExceptionIfNotExisted() {
+    public void shouldThrowExceptionIfNotExisted() throws Exception {
 
-        try {
-            Mockito.when(service.getUserByUUID(Mockito.anyString())).thenThrow(new UserOperationException(ErrorCode.USER_NOT_EXISTED));
+        Mockito.when(service.getUserByID(Mockito.anyLong())).thenThrow(new UserOperationException(ErrorCode.USER_NOT_EXISTED));
 
-            final ResultActions resultActions = rest.perform(get("/v1/user")
-                    .param("uuid", "scasc-ascw").accept(MediaType.APPLICATION_JSON));
-            String result = resultActions.andReturn().getResponse().getContentAsString();
+        final ResultActions resultActions = rest.perform(get("/v1/users")
+                .param("id", Long.toString(1L)).accept(MediaType.APPLICATION_JSON));
+        String result = resultActions.andReturn().getResponse().getContentAsString();
 
-            String message = read(result, "$.message");
-            Integer errorCode = read(result, "$.errorCode");
+        String message = read(result, "$.message");
+        Integer errorCode = read(result, "$.errorCode");
 
-            resultActions.andExpect(status().isBadRequest());
-            assertThat(message).isEqualTo(ErrorCode.USER_NOT_EXISTED.getDescription());
-            assertThat(errorCode).isEqualTo(ErrorCode.USER_NOT_EXISTED.getCode());
+        resultActions.andExpect(status().isBadRequest());
+        assertThat(message).isEqualTo(ErrorCode.USER_NOT_EXISTED.getDescription());
+        assertThat(errorCode).isEqualTo(ErrorCode.USER_NOT_EXISTED.getCode());
 
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail();
-        }
     }
 
 
     @Test
-    public void shouldChangeUserStatusIfExisted() {
+    public void shouldChangeUserStatusIfExisted() throws Exception {
         StatusCommand commandChange = new StatusCommand();
-        commandChange.setUuid("asacsscs");
+        commandChange.setId(1L);
         commandChange.setStatus(true);
 
         StatusCommand resultCommand = new StatusCommand();
-        resultCommand.setUuid("asacsscs");
+        resultCommand.setId(1L);
         resultCommand.setStatus(true);
         resultCommand.setLastStatus(false);
-        try {
-            Mockito.when(service.changeStatus(commandChange)).thenReturn(resultCommand);
+        Mockito.when(service.changeStatus(commandChange)).thenReturn(resultCommand);
 
-            final ResultActions resultActions = rest.perform(post("/v1/user/change-status")
-                    .content("{\n" +
-                            "\t\"uuid\": \"asacsscs\",\n" +
-                            "\t\"status\": true\n" +
-                            "}").accept(MediaType.APPLICATION_JSON).contentType(MediaType.APPLICATION_JSON));
-            String result = resultActions.andReturn().getResponse().getContentAsString();
+        final ResultActions resultActions = rest.perform(post("/v1/users/change-status")
+                .content("{\n" +
+                        "\t\"id\": \"" + Long.toString(1L) + "\",\n" +
+                        "\t\"status\": true\n" +
+                        "}").accept(MediaType.APPLICATION_JSON).contentType(MediaType.APPLICATION_JSON));
+        String result = resultActions.andReturn().getResponse().getContentAsString();
 
-            String uuid = read(result, "$.uuid");
-            boolean status = read(result, "$.status");
-            boolean lastStatus = read(result, "$.lastStatus");
+        Long id = new Long((Integer) read(result, "$.id"));
+        boolean status = read(result, "$.status");
+        boolean lastStatus = read(result, "$.lastStatus");
 
-            resultActions.andExpect(status().isOk());
-            assertThat(uuid).isEqualTo(commandChange.getUuid());
-            assertThat(status).isTrue();
-            assertThat(lastStatus).isFalse();
+        resultActions.andExpect(status().isOk());
+        assertThat(id).isEqualTo(commandChange.getId());
+        assertThat(status).isTrue();
+        assertThat(lastStatus).isFalse();
 
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail();
-        }
     }
 
     @Test
-    public void shouldThrowExceptionIfUserWithStatusCommandUUIDNotExisted() {
-        try {
-            Mockito.when(service.changeStatus(Mockito.any(StatusCommand.class))).thenThrow(new UserOperationException(ErrorCode.USER_NOT_EXISTED));
+    public void shouldThrowExceptionIfUserWithStatusCommandUUIDNotExisted() throws Exception {
+        Mockito.when(service.changeStatus(Mockito.any(StatusCommand.class))).thenThrow(new UserOperationException(ErrorCode.USER_NOT_EXISTED));
 
-            final ResultActions resultActions = rest.perform(post("/v1/user/change-status")
-                    .content("{\n" +
-                            "\t\"uuid\": \"asacsscs\",\n" +
-                            "\t\"status\": true\n" +
-                            "}").accept(MediaType.APPLICATION_JSON).contentType(MediaType.APPLICATION_JSON));
-            String result = resultActions.andReturn().getResponse().getContentAsString();
+        final ResultActions resultActions = rest.perform(post("/v1/users/change-status")
+                .content("{\n" +
+                        "\t\"uuid\": \"asacsscs\",\n" +
+                        "\t\"status\": true\n" +
+                        "}").accept(MediaType.APPLICATION_JSON).contentType(MediaType.APPLICATION_JSON));
+        String result = resultActions.andReturn().getResponse().getContentAsString();
 
-            String message = read(result, "$.message");
-            Integer errorCode = read(result, "$.errorCode");
+        String message = read(result, "$.message");
+        Integer errorCode = read(result, "$.errorCode");
 
-            resultActions.andExpect(status().isBadRequest());
-            assertThat(message).isEqualTo(ErrorCode.USER_NOT_EXISTED.getDescription());
-            assertThat(errorCode).isEqualTo(ErrorCode.USER_NOT_EXISTED.getCode());
+        resultActions.andExpect(status().isBadRequest());
+        assertThat(message).isEqualTo(ErrorCode.USER_NOT_EXISTED.getDescription());
+        assertThat(errorCode).isEqualTo(ErrorCode.USER_NOT_EXISTED.getCode());
 
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail();
-        }
     }
 
 }

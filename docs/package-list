@@ -1,0 +1,7 @@
+com.example.demo
+com.example.demo.config
+com.example.demo.controller
+com.example.demo.entity
+com.example.demo.repository
+com.example.demo.services
+com.example.demo.services.exception

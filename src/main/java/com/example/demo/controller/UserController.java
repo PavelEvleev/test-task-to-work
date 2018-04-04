@@ -67,7 +67,8 @@ public class UserController {
      * @param command - object with data to change user status
      * @return changed status
      * @throws UserOperationException -  A custom exception to notify the client
-     * @see UserOperationException,StatusCommand
+     * @see UserOperationException
+     * @see StatusCommand
      */
     @PostMapping("/change-status")
     public ResponseEntity<StatusCommand> changeStatus(@RequestBody StatusCommand command) throws UserOperationException {

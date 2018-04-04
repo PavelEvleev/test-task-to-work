@@ -2,6 +2,10 @@
 
 
 
+### You need
+    Java 8
+    Maven
+
 ### How to run from idea
 
     Import the project to your idea

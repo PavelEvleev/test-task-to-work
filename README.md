@@ -16,6 +16,7 @@ Change the connection to your database. Install Maven if it is not installed. In
    *  java -jar .\target\*.jar
    
    The rest api doc you can see below
+   
    Open your favorite browser and past `http://localhost:8080/swagger-ui.html#/`
    
    

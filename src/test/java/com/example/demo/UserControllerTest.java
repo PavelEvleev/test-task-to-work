@@ -92,13 +92,13 @@ public class UserControllerTest {
         String name = read(result, "$.name");
         String phone = read(result, "$.phone");
         String email = read(result, "$.email");
-        Long id = new Long((Integer) read(result, "$.id"));
+        Integer id = read(result, "$.id");
 
         resultActions.andExpect(status().isOk());
         assertThat(name).isEqualTo(expectedUser.getName());
         assertThat(phone).isEqualTo(expectedUser.getPhone());
         assertThat(email).isEqualTo(expectedUser.getEmail());
-        assertThat(id).isEqualTo(expectedUser.getId());
+        assertThat(id.longValue()).isEqualTo(expectedUser.getId());
 
     }
 
@@ -140,12 +140,12 @@ public class UserControllerTest {
                         "}").accept(MediaType.APPLICATION_JSON).contentType(MediaType.APPLICATION_JSON));
         String result = resultActions.andReturn().getResponse().getContentAsString();
 
-        Long id = new Long((Integer) read(result, "$.id"));
+        Integer id =  read(result, "$.id");
         boolean status = read(result, "$.status");
         boolean lastStatus = read(result, "$.lastStatus");
 
         resultActions.andExpect(status().isOk());
-        assertThat(id).isEqualTo(commandChange.getId());
+        assertThat(id.longValue()).isEqualTo(commandChange.getId());
         assertThat(status).isTrue();
         assertThat(lastStatus).isFalse();
 
